@@ -1,0 +1,23 @@
+﻿{% extends "app/layout.html" %}
+{% block content %}
+
+<h2>{{ title }}.</h2>
+<h3>{{ message }}</h3>
+
+<h1>Insertar una opción</h1>
+{% if request.user.is_authenticated %}
+{% if error_message %}<p><strong style="color:{{ error_message.color }};"><b>{{ error_message.texto }}</b></strong></p>{% endif %}
+{% if valid %}<p><strong style="color:{{ valid.color }};"><b>{{ valid.texto }}</b></strong></p>{% endif %}
+{% if form %}
+        <form method="POST" class="post-form">{% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="save btn btn-default">Save</button>
+        </form>
+{% endif %}
+<a href="{% url 'index' %}">Ver preguntas</a> 
+{% else %}
+    <br />
+    <h2>Zona restringida</h2>
+    <img src="https://media.giphy.com/media/3faT4z5qdm19t86ebI/giphy.gif" style="display: block;margin-left: auto;margin-right: auto;">
+{% endif %}
+{% endblock %}

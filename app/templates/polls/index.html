@@ -1,0 +1,52 @@
+﻿{% extends "app/layout.html" %}
+{% block content %}
+
+<h2>{{ title }}.</h2>
+<h3>{{ message }}</h3>
+<script>
+    function actualizarFiltro() {
+        try {
+            $.ajax({
+                url: "/api/procesarFiltro",
+                type: "POST",
+                timeout: 15000,
+                data: {
+                    "subject": $("#subject").val(), "csrfmiddlewaretoken": $('input[name$="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (data) {
+                    $("#box").html(data);
+                },
+            });
+        } catch { }
+        return false;
+    }
+    </script>
+<div id="box">
+{% if latest_question_list or subjects %}
+    <form onsubmit="return actualizarFiltro()">{% csrf_token %}
+                <label for="subject">Filtrar por categoria:</label>
+                <select name="subject" id="subject">
+                    <option value="NoFiltrar">Ninguna categoria</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject | escape }}">{{ subject | escape }}</option>
+                {% endfor %}
+                </select>
+
+                <input type="submit" value="Filtrar por categoria">
+    </form> 
+    <ul>
+    {% for question in latest_question_list %}
+        <li><a href="{% url 'detail' question.id %}">{{ question.question_text | escape }}</a></li>
+    {% endfor %}
+    </ul>
+  
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+</div>
+
+{% if request.user.is_authenticated %}
+<a href="{% url 'add' %}"><h2>Insertar pregunta</h2></a> 
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <h1>Herramientas Avanzadas de Sw</h1>
+    <p class="lead">Aplicacion para realizar encuestas sobre la asignatura </p>
+    <p class="lead">Esta aplicacion pretende ser un ejemplo de uso de Django y esta desarrollada con VS 2019 y desplegada en Azure</p>
+</div>
+
+<div class="row">
+    {% if ranking %}
+    <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css" integrity="sha384-Uu6IeWbM+gzNVXJcM9XV3SohHtmWE+3VGi496jvgX1jyvDTXfdK+rfZc8C1Aehk5" crossorigin="anonymous">
+    <table class="pure-table" style="        margin-left: auto;
+        margin-right: auto;">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Resultado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in ranking %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ user.nombre }}</td>
+            <td>{{ user.score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    {% endif %}
+</div>
+
+{% endblock %}

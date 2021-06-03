@@ -1,0 +1,21 @@
+﻿{% if latest_question_list or subjects %}
+    <form onsubmit="return actualizarFiltro()">{% csrf_token %}
+                <label for="subject">Filtrar por categoria:</label>
+                <select name="subject" id="subject">
+                    <option value="NoFiltrar">Ninguna categoria</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject | escape}}">{{ subject | escape}}</option>
+                {% endfor %}
+                </select>
+
+                <input type="submit" value="Filtrar por categoria">
+    </form> 
+    <ul>
+    {% for question in latest_question_list %}
+        <li><a href="{% url 'detail' question.id %}">{{ question.question_text | escape }}</a></li>
+    {% endfor %}
+    </ul>
+  
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}

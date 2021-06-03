@@ -1,0 +1,250 @@
+﻿{% extends "app/layout.html" %}
+{% block content %}
+
+<h2>{{ title }}.</h2>
+<h3>{{ message }}</h3>
+
+<h3>Pregunta: {{ question.question_text | escape }}</h3>
+{% if error_message %}<p><strong style="        color: red;"><b>{{ error_message }}</b></strong></p>{% endif %}
+{% if request.user.is_authenticated %}
+    <style>
+    .fl-table {
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: normal;
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 100%;
+        white-space: nowrap;
+        background-color: white;
+    }
+
+        .fl-table td, .fl-table th {
+            text-align: center;
+            padding: 8px;
+        }
+
+        .fl-table td {
+            border-right: 1px solid #f8f8f8;
+            font-size: 12px;
+        }
+
+        .fl-table thead th {
+            color: #ffffff;
+            background: #4FC3A1;
+        }
+
+
+            .fl-table thead th:nth-child(odd) {
+                color: #ffffff;
+                background: #324960;
+            }
+
+        .fl-table tr:nth-child(even) {
+            background: #F8F8F8;
+        }
+
+    /* Responsive */
+
+    @media (max-width: 767px) {
+        .fl-table {
+            display: block;
+            width: 100%;
+        }
+
+        .table-wrapper:before {
+            content: "Scroll horizontally >";
+            display: block;
+            text-align: right;
+            font-size: 11px;
+            color: white;
+            padding: 0 0 10px;
+        }
+
+        .fl-table thead, .fl-table tbody, .fl-table thead th {
+            display: block;
+        }
+
+            .fl-table thead th:last-child {
+                border-bottom: none;
+            }
+
+        .fl-table thead {
+            float: left;
+        }
+
+        .fl-table tbody {
+            width: auto;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .fl-table td, .fl-table th {
+            padding: 20px .625em .625em .625em;
+            height: 60px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            overflow-y: auto;
+            width: 120px;
+            font-size: 13px;
+            text-overflow: ellipsis;
+        }
+
+        .fl-table thead th {
+            text-align: left;
+            border-bottom: 1px solid #f7f7f9;
+        }
+
+        .fl-table tbody tr {
+            display: table-cell;
+        }
+
+            .fl-table tbody tr:nth-child(odd) {
+                background: none;
+            }
+
+        .fl-table tr:nth-child(even) {
+            background: transparent;
+        }
+
+        .fl-table tr td:nth-child(odd) {
+            background: #F8F8F8;
+            border-right: 1px solid #E6E4E4;
+        }
+
+        .fl-table tr td:nth-child(even) {
+            border-right: 1px solid #E6E4E4;
+        }
+
+        .fl-table tbody td {
+            display: block;
+            text-align: center;
+        }
+    }
+
+  </style>
+    <table class="fl-table">
+            <tr>
+                <th>
+                    Opcion
+                </th>
+                <th>
+                    Votos
+                </th>
+                <th>
+                    Respuesta
+                </th>
+            </tr>
+        {% for choice in question.choice_set.all %}
+            <tr>
+                <td>
+                    {{ choice.choice_text | escape }}
+                </td>
+                <td>
+                    {{ choice.votes }}
+                </td>           
+                <td>
+                    {% if choice.correct  %}
+                    <label style="        color: green">CORRECTA</label>
+                    {% else %}
+                        <label style="        color: red">INCORRECTA</label>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+
+    <a href="{% url 'choice_add' question.id %}"><h3>Insertar Opciones</h3></a> 
+    <a href="{% url 'chart' question.id %}"> <h3>Ver resultado de la votacion</h3> </a><br />
+
+    
+{% else %}
+<p id="incorrect" hidden><strong style="        color: red;"><b>Respuesta incorrecta :(</b></strong></p>
+<p id="error" hidden><strong style="        color: red;"><b>No has seleccionado una respuesta</b></strong></p>
+<p id="correct" hidden><strong style="        color: green;"><b>Respuesta correcta :)</b></strong></p><br />
+<a id="results" hidden href="{% url 'results' question.id %}">Ver resultado de la votacion</> </a>
+    <script>
+    var upload = false;
+    function comprobarResultado() {
+        $("#error").hide();
+        $("#incorrect").hide();
+        $("#correct").hide();
+        $("#reg").hide();
+        try {
+            $.ajax({
+                url: "/api/procesarVoto",
+                type: "POST",
+                dataType: "json",
+                timeout: 15000,
+                data: {
+                    "choice": document.querySelector('input[name="choice"]:checked').value, "question_id": $('input[name$="question_id"]').val(), "csrfmiddlewaretoken": $('input[name$="csrfmiddlewaretoken"]').val(),
+                },
+                success: function (data) {
+                    $("#results").show();
+                    switch (data.codigo) {
+                        case -1:
+                            $("#error").toggle();
+                            break;
+                        case 0:
+                            $("#incorrect").toggle();
+                            break;
+                        case 1:
+                            $("#correct").toggle();
+                            $("#reg").toggle();
+                            upload = true;
+                            break;
+                        default:
+                            break;
+                    }
+                },
+            });
+        } catch {
+            $("#error").toggle();
+        }
+        return false;
+    }
+    function subirResultado() {
+        if (upload) {
+            try {
+                $.ajax({
+                    url: "/api/procesarRanking",
+                    type: "POST",
+                    dataType: "json",
+                    timeout: 15000,
+                    data: {
+                        "name": $('input[name$="nombre"]').val(), "csrfmiddlewaretoken": $('input[name$="csrfmiddlewaretoken"]').val(),
+                    },
+                    success: function (data) {
+                        alert("Resultado guardado");
+                        upload = false;
+                    },
+                });
+            } catch {
+                alert("Algo ha ido mal.")
+            }
+        }
+        else {
+            alert("Ya has registrado el acierto.")
+        }
+        return false;
+    }
+    </script>
+    <form onsubmit="return comprobarResultado()" method="post">
+        {% csrf_token %}
+        {% for choice in question.choice_set.all %}
+        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
+        <label for="choice{{ forloop.counter }}">{{ choice.choice_text | escape }}</label><br />
+    {% endfor %}
+        <input type="hidden" hidden name="question_id" value="{{question.id}}" />
+        <input type="submit" value="Vote" />
+    </form><br />
+    <form hidden id="reg" onsubmit="return subirResultado()" method="post">
+        <h5>Si quieres registrar tu acierto en el ranking introduce tu nombre:</h5>
+        <label for="nombre">Nombre: </label><br />
+        <input type="text" name="nombre" id="nombre" value="" />
+        <input type="submit" value="Registrar acierto" />
+    </form>
+{% endif %}
+{% endblock %}

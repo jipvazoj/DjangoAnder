@@ -13,6 +13,9 @@ import app.models
 # Uncomment the next lines to enable the admin:
 from django.conf.urls import include
 from django.contrib import admin
+from django.conf.urls.static import static
+from django.conf import settings
+
 admin.autodiscover()
 
 urlpatterns = [# Examples:
@@ -52,5 +55,5 @@ urlpatterns = [# Examples:
     url(r'^polls/(?P<question_id>\d+)/$', app.views.detail, name='detail'),
     url(r'^polls/(?P<question_id>\d+)/vote/$', app.views.vote, name='vote'),
     url(r'^polls/', app.views.index, name='index'),
-    url(r'^api/(?P<action>\w+)', app.views.api, name='api'),]
+    url(r'^api/(?P<action>\w+)', app.views.api, name='api'),] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
